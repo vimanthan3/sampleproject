@@ -1,5 +1,18 @@
 plugins {
   id "com.gradle.enterprise" version "3.10.3"
+  id 'org.cyclonedx.bom' version '1.8.1'
+
+}
+cyclonedxBom {
+    includeConfigs = ["runtimeClasspath"]
+    projectType = "application"
+    schemaVersion = "1.5"
+    destination = file("build/reports")
+    outputName = "bom"
+    outputFormat = "xml"
+    includeBomSerialNumber = false
+    includeLicenseText = false
+    componentVersion = "2.0.0"
 }
 
 rootProject.name = 'gradle-project-template'
