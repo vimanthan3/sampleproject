@@ -1,5 +1,6 @@
 plugins {
   id "org.sonarqube" version "3.4.0.2513"
+  id 'org.cyclonedx.bom' version '1.8.1'
 }
 
 buildScan {
@@ -40,6 +41,17 @@ allprojects {
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.6.1'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.6.1'
   }
+  cyclonedxBom {
+    includeConfigs = ["runtimeClasspath"]
+    projectType = "application"
+    schemaVersion = "1.5"
+    destination = file("build/reports")
+    outputName = "bom"
+    outputFormat = "xml"
+    includeBomSerialNumber = false
+    includeLicenseText = false
+    componentVersion = "2.0.0"
+}
 
   test {
     useJUnitPlatform()
