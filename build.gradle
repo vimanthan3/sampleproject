@@ -99,3 +99,4 @@ sonarqube {
     property "sonar.projectKey", "d3adspace_gradle-project-template"
   }
 }
+task releaseTar(type: Tar, dependsOn: ['build']) { with packageDistribution }
