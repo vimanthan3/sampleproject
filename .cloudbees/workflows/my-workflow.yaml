@@ -1,29 +1,40 @@
-apiVersion: automation.cloudbees.io/v1alpha1
-kind: workflow
-name: My workflow
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: my-workflow
+spec:
+  params:
+    - name: commit-message
+      type: string
+  tasks:
+    - name: capture-commit-message
+      taskSpec:
+        steps:
+          - name: capture-message
+            image: alpine/git
+            script: |
+              COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+              echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" > /tekton/results/commit-message
+        results:
+          - name: commit-message
+            description: The commit message from the latest commit.
 
-on:
-  push:
-    branches:
-      - 'main'
-
-jobs:
-  build:
-    steps:
-      - name: Capture Commit Message
-        uses: docker://golang:1.20.3-alpine3.17
-        shell: sh
-        run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $BEE_WORKSPACE/env-vars
-
-  evidence:
-    needs: build
-    steps:
-      - name: Publish workflow evidence item
-        uses: cloudbees-io/publish-evidence-item@v1
-        with:
-          content: |
-            ## Test markup and property rendering
-            - Run ID: ${{ cloudbees.run_id }} 
-            - Commit Message: ${{ vars.COMMIT_MESSAGE }}
+    - name: publish-evidence
+      runAfter:
+        - capture-commit-message
+      taskSpec:
+        params:
+          - name: commit-message
+            type: string
+        steps:
+          - name: publish
+            image: curlimages/curl
+            script: |
+              echo "## Test markup and property rendering"
+              echo "- Run ID: ${TEKTON_RUN_ID}"
+              echo "- Commit Message: $(params.commit-message)"
+        workspaces:
+          - name: evidence-workspace
+      params:
+        - name: commit-message
+          value: "$(tasks.capture-commit-message.results.commit-message)"
