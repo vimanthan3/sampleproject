@@ -21,7 +21,21 @@ jobs:
         uses: docker://golang:1.20.3-alpine3.17
         shell: sh
         run: |
-          apk add --no-cache maven  # Install Maven
+          apk add --no-cache maven
           ls -l /cloudbees/workspace
-          cd spring-petclinic-config-server && mvn clean install  # Use && instead of &
+          cd spring-petclinic-config-server && mvn clean install
           ls -l
+
+      - name: Pull commit-info.md
+        uses: docker://alpine:latest
+        shell: sh
+        run: |
+          apk add --no-cache curl  # Install curl to download files
+          curl -o commit-info.md https://raw.githubusercontent.com/cashokannamalai/spring-petclinic-config-server/main/commit-info.md
+
+      - name: Show evidence
+        uses: docker://alpine:latest
+        shell: sh
+        run: |
+          cat commit-info.md  # Print the contents of commit-info.md
+          cp commit-info.md /cloudbees/workspace/evidence/  # Copy to a specific evidence directory if needed
