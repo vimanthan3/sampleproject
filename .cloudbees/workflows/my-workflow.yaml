@@ -16,38 +16,55 @@ jobs:
         run: |
           echo "hello world"
 
-  evidence:
+  fetch_commit_info:
     needs: build
     steps:
-      - name: Publish workflow evidence item
-        uses: cloudbees-io/publish-evidence-item@v1
-        with:
-          apiVersion: automation.cloudbees.io/v1alpha1
-    kind: workflow
-    name: My Workflow
+        - name: Ensure commit-info.md exists
+          uses: docker://golang:1.20.3-alpine3.17
+    shell: sh
+    run: |
+          # Assume the commit-info.md file is checked out or available in the workspace
+          if [ ! -f commit-info.md ]; then
+            echo "commit-info.md not found!"
+            exit 1
+          fi
+           - name: Read Commit Information
+          shell: sh
+          run: |
+          # Read the contents of commit-info.md
+          COMMIT_INFO=$(cat commit-info.md)
 
-    on:
-  push:
-    branches:
-      - 'main'
+          # Save the commit information as an environment variable
+          echo "COMMIT_INFO=$COMMIT_INFO" >> $GITHUB_ENV
 
-  jobs:
-   build:
+  publish_evidence:
+    needs: fetch_commit_info
     steps:
-      - name: Say hello
-        uses: docker://golang:1.20.3-alpine3.17
-        shell: sh
-        run: |
-          echo "hello world"
+        - name: Publish Evidence
+          uses: docker://golang:1.20.3-alpine3.17
+          shell: sh
+          run: |
+             # Prepare content to be used in the JSON
+             CONTENT=$(cat <<EOF
+             ## Test markup and property rendering
+             - Run ID: ${{ cloudbees.run_id }}
+             - Commit Information: ${{ env.COMMIT_INFO }}
+             - API Endpoint: ${{ api.endpoint }}
+             EOF
+             )
 
-   evidence:
-    needs: build
-    steps:
-      - name: Publish workflow evidence item
-        uses: cloudbees-io/publish-evidence-item@v1
-        with:
-content: |
-  ## Test markup and property rendering
-  - Run ID: ${{ cloudbees.run_id }}
-  - Commit Message: "Sample commit message"
+             # Make Platform API call to post workflow evidence item
+             response=$(curl --fail-with-body -X POST "$URL/v1/workflows/artifact" \
+             -H "Authorization: Bearer $JWT" \
+             -H "Content-Type: application/json" \
+             --data-binary '{"stepId": "'"$STEP_ID"'", "evidence": {"value": "'"$CONTENT"'", "format": "markdown"}}') || command_failed=1
 
+             # Check curl exit code
+              if [ ${command_failed:-0} -eq 1 ]; then
+             echo "Platform API call failed with error: '$response'"
+             exit 1
+               fi
+             env:
+          STEP_ID: ${{ step.id }}
+          JWT: ${{ cloudbees.api.token }}
+          URL: ${{ cloudbees.api.url }}
