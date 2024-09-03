@@ -50,4 +50,4 @@ content: |
   ## Test markup and property rendering
   - Run ID: ${{ cloudbees.run_id }}
   - Commit Message: "Sample commit message"
-  - API Endpoint: "https://example.com/api"
+
