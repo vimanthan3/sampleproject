@@ -25,4 +25,3 @@ jobs:
           content: |
             ## Test markup and property rendering
             - Run ID: ${{ cloudbees.run_id }} 
-            - Color test: <span style="color:green">This text should be green</span>
