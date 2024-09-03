@@ -1,39 +1,29 @@
 apiVersion: automation.cloudbees.io/v1alpha1
-kind: Workflow
-metadata:
-  name: my-workflow
-spec:
-  triggers:
-    - type: push
-      branches:
-        - 'main'
-  jobs:
-    - name: build
-      steps:
-        - name: Say hello
-          image: golang:1.20.3-alpine3.17
-          shell: sh
-          run: |
-            echo "hello world"
+kind: workflow
+name: My workflow
 
-    - name: capture-commit-message
-      needs: build
-      steps:
-        - name: Capture Commit Message
-          image: alpine/git
-          shell: sh
-          run: |
-            COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-            echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" > /workspace/commit-message.env
+on:
+  push:
+    branches:
+      - 'main'
 
-    - name: publish-evidence
-      needs: capture-commit-message
-      steps:
-        - name: Publish Workflow Evidence Item
-          image: curlimages/curl
-          shell: sh
-          run: |
-            echo "## Test markup and property rendering" > /workspace/evidence.txt
-            echo "- Run ID: ${{ cloudbees.run_id }}" >> /workspace/evidence.txt
-            echo "- Commit Message: $(grep COMMIT_MESSAGE /workspace/commit-message.env | cut -d'=' -f2)" >> /workspace/evidence.txt
-            curl -X POST -H "Content-Type: text/plain" --data-binary @/workspace/evidence.txt http://your-evidence-service/api/publish
+jobs:
+  build:
+    steps:
+      - name: Capture Commit Message
+        uses: docker://golang:1.20.3-alpine3.17
+        shell: sh
+        run: |
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $BEE_WORKSPACE/env-vars
+
+  evidence:
+    needs: build
+    steps:
+      - name: Publish workflow evidence item
+        uses: cloudbees-io/publish-evidence-item@v1
+        with:
+          content: |
+            ## Test markup and property rendering
+            - Run ID: ${{ cloudbees.run_id }} 
+            - Commit Message: ${{ vars.COMMIT_MESSAGE }}
