@@ -10,11 +10,12 @@ on:
 jobs:
   build:
     steps:
-      - name: Say hello
+      - name: Capture Commit Message
         uses: docker://golang:1.20.3-alpine3.17
         shell: sh
         run: |
-          echo "hello world"
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $BEE_WORKSPACE/env-vars
 
   evidence:
     needs: build
@@ -25,4 +26,4 @@ jobs:
           content: |
             ## Test markup and property rendering
             - Run ID: ${{ cloudbees.run_id }} 
-            - Commit Message: ${{ github.event.head_commit.message }}
+            - Commit Message: ${{ vars.COMMIT_MESSAGE }}
