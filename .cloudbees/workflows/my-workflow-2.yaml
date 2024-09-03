@@ -21,6 +21,7 @@ jobs:
         uses: docker://golang:1.20.3-alpine3.17
         shell: sh
         run: |
+          apk add --no-cache maven  # Install Maven
           ls -l /cloudbees/workspace
-          cd spring-petclinic-config-server & mvn clean build
+          cd spring-petclinic-config-server && mvn clean install  # Use && instead of &
           ls -l
