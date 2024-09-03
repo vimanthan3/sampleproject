@@ -35,17 +35,15 @@ jobs:
           content: |
             ## Test markup and property rendering
             - Run ID: ${{ cloudbees.run_id }}
-            - Commit Message: ${{ env.COMMIT_MESSAGE }}
-
+            - Commit Message: ${{ steps.commit_info.outputs.COMMIT_MESSAGE }}
+            
             ## Workflow Evidence
             | Property      | Value                                         |
             |---------------|-----------------------------------------------|
-            | Commit ID     | ${{ env.COMMIT_ID }}                         |
-            | Commit Message| ${{ env.COMMIT_MESSAGE }}                    |
+            | Commit ID     | ${{ steps.commit_info.outputs.COMMIT_ID }}   |
+            | Commit Message| ${{ steps.commit_info.outputs.COMMIT_MESSAGE }}|
           format: MARKDOWN
         env:
-          COMMIT_ID: ${{ env.COMMIT_ID }}
-          COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
           cloudbees.api.token: ${{ cloudbees.api.token }}
           cloudbees.api.url: ${{ cloudbees.api.url }}
           step.id: ${{ step.id }}
