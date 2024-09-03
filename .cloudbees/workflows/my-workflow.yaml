@@ -19,25 +19,11 @@ jobs:
   evidence:
     needs: build
     steps:
-      - name: Get Commit Info
-        id: commit_info
-        uses: docker://alpine/git:latest
-        shell: sh
-        run: |
-          COMMIT_ID=$(git rev-parse HEAD)
-          echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}"
-
       - name: Publish workflow evidence item
         uses: cloudbees-io/publish-evidence-item@v1
         with:
           content: |
             ## Test markup and property rendering
             - Run ID: ${{ cloudbees.run_id }}
-            - Commit Message: ${{ steps.commit_info.outputs.COMMIT_MESSAGE }}
-            
-            ## Workflow Evidence
-            | Property      | Value                                         |
-            |---------------|-----------------------------------------------|
-            | Commit ID     | ${{ steps.commit_info.outputs.COMMIT_ID }}   |
-            | Commit Message| ${{ steps.commit_info.outputs.COMMIT_MESSAGE }}|
-          format: MARKDOWN
+            - Commit Message: ${{ cloudbees.commit_message }}
+            - API Endpoint: ${{ vars.api_endpoint }}
