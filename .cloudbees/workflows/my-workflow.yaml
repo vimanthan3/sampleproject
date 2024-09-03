@@ -19,24 +19,27 @@ jobs:
   evidence:
     needs: build
     steps:
-      - name: Prepare and Post Evidence
-        uses: docker://golang:1.20.3-alpine3.17
-        shell: sh  
+      - name: Get Commit Info
+        id: commit_info
+        uses: docker://alpine/git:latest
+        shell: sh
         run: |
-          # Prepare content to be used in the JSON
-          PREPARED_CONTENT=$(echo "$CONTENT" | sed 's/"/\\"/g' | sed 's/$/\\n/g' | tr -d '\n')
-          
-          # Make Platform API call to post workflow evidence item
-          response=$(curl --fail-with-body -X 'POST' "$URL/v1/workflows/artifact" -H "Authorization: Bearer $JWT" -H 'Content-Type: application/json' --data-binary '{"stepId": "'"$STEP_ID"'", "evidence": {"value": "'"$PREPARED_CONTENT"'", "format": "'"$FORMAT"'"}}') || command_failed=1
-          
-          # Check curl exit code
-          if [ ${command_failed:-0} -eq 1 ]; then
-            echo "Platform API call failed with error: '$response'"
-            exit 1
-          fi
-    env:
-          STEP_ID: ${{ step.id }}
-          CONTENT: ${{ inputs.content }}
-          FORMAT: ${{ inputs.format }}
-          JWT: ${{ cloudbees.api.token }}
-          URL: ${{ cloudbees.api.url }}
+          COMMIT_ID=$(git rev-parse HEAD)
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          echo "COMMIT_ID=${COMMIT_ID}" >> $GITHUB_ENV
+          echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
+
+      - name: Publish workflow evidence item
+        uses: cloudbees-io/publish-evidence-item@v1
+        with:
+          content: |
+            ## Test markup and property rendering
+            - Run ID: ${{ cloudbees.run_id }}
+            - Commit Message: ${{ env.COMMIT_MESSAGE }}
+            
+            ## Workflow Evidence
+            | Property      | Value                                         |
+            |---------------|-----------------------------------------------|
+            | Commit ID     | ${{ env.COMMIT_ID }}                         |
+            | Commit Message| ${{ env.COMMIT_MESSAGE }}                    |
+          format: MARKDOWN
