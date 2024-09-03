@@ -25,5 +25,5 @@ jobs:
           content: |
             ## Test markup and property rendering
             - Run ID: ${{ cloudbees.run_id }}
-            - Commit Message: ${{ cloudbees.commit_message }}
+            - Commit Message: ${{ cloudbees.run_message }}
             - API Endpoint: ${{ vars.api_endpoint }}
