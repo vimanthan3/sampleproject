@@ -22,8 +22,32 @@ jobs:
       - name: Publish workflow evidence item
         uses: cloudbees-io/publish-evidence-item@v1
         with:
+          apiVersion: automation.cloudbees.io/v1alpha1
+    kind: workflow
+    name: My Workflow
+
+    on:
+  push:
+    branches:
+      - 'main'
+
+  jobs:
+   build:
+    steps:
+      - name: Say hello
+        uses: docker://golang:1.20.3-alpine3.17
+        shell: sh
+        run: |
+          echo "hello world"
+
+   evidence:
+    needs: build
+    steps:
+      - name: Publish workflow evidence item
+        uses: cloudbees-io/publish-evidence-item@v1
+        with:
           content: |
             ## Test markup and property rendering
             - Run ID: ${{ cloudbees.run_id }}
-            - Commit Message: ${{ cloudbees.run_message }}
-            - API Endpoint: ${{ vars.api_endpoint }}
+            - Commit Message: ${{ scm.commit_message }}
+            - API Endpoint: ${{ api.endpoint }}
