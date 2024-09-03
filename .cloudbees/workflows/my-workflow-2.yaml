@@ -9,33 +9,29 @@ on:
 
 jobs:
   build:
+    name: Build and Test
     steps:
       - name: Checkout code
-        uses: docker://alpine:latest
+        uses: docker://alpine:3.18
         shell: sh
         run: |
           apk add --no-cache git
           git clone https://github.com/cashokannamalai/spring-petclinic-config-server.git
 
-      - name: Say hello
+      - name: Build project
         uses: docker://golang:1.20.3-alpine3.17
         shell: sh
         run: |
           apk add --no-cache maven
+          echo "Workspace contents before build:"
           ls -l /cloudbees/workspace
           cd spring-petclinic-config-server && mvn clean install
+          echo "Workspace contents after build:"
           ls -l
 
-      - name: Pull commit-info.md
-        uses: docker://alpine:latest
+      - name: Show commit-info.md
+        uses: docker://alpine:3.18
         shell: sh
         run: |
-          apk add --no-cache curl  # Install curl to download files
-          curl -o commit-info.md https://raw.githubusercontent.com/cashokannamalai/spring-petclinic-config-server/main/commit-info.md
-
-      - name: Show evidence
-        uses: docker://alpine:latest
-        shell: sh
-        run: |
-          cat commit-info.md  # Print the contents of commit-info.md
-          cp commit-info.md /cloudbees/workspace/evidence/  # Copy to a specific evidence directory if needed
+          echo "Displaying commit-info.md:"
+          cat /cloudbees/workspace/commit-info.md
