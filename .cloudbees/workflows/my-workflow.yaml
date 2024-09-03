@@ -46,8 +46,8 @@ jobs:
       - name: Publish workflow evidence item
         uses: cloudbees-io/publish-evidence-item@v1
         with:
-          content: |
-            ## Test markup and property rendering
-            - Run ID: ${{ cloudbees.run_id }}
-            - Commit Message: ${{ scm.commit_message }}
-            - API Endpoint: ${{ api.endpoint }}
+content: |
+  ## Test markup and property rendering
+  - Run ID: ${{ cloudbees.run_id }}
+  - Commit Message: "Sample commit message"
+  - API Endpoint: "https://example.com/api"
