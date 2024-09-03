@@ -26,4 +26,3 @@ jobs:
             ## Test markup and property rendering
             - Run ID: ${{ cloudbees.run_id }} 
             - Run ID: ${{ vars.api_endpoint }}
-  
