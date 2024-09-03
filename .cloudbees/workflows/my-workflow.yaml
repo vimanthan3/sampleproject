@@ -16,3 +16,13 @@ jobs:
         run: |
           echo "hello world"
 
+  evidence:
+    needs: build
+    steps:
+      - name: Publish workflow evidence item
+        uses: cloudbees-io/publish-evidence-item@v1
+        with:
+          content: |
+            ## Test markup and property rendering
+            - Run ID: ${{ cloudbees.run_id }}
+
