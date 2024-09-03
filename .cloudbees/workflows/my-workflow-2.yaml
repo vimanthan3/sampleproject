@@ -22,3 +22,4 @@ jobs:
         shell: sh
         run: |
           ls -l /cloudbees/workspace
+          cd spring-petclinic-config-server
