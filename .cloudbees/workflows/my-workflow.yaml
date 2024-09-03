@@ -1,17 +1,25 @@
 apiVersion: automation.cloudbees.io/v1alpha1
 kind: workflow
-name: My workflow
+name: publish-evidence-item
 
 on:
   push:
     branches:
-      - 'main'
+      - '**'
+  workflow_dispatch:
+
+permissions:
+  id-token: read
 
 jobs:
-  build:
+  testAction:
     steps:
-      - name: Say hello
-        uses: docker://golang:1.20.3-alpine3.17
-        shell: sh
-        run: |
-          echo "hello world"
+    - id: testAction
+      name: Test publish-evidence-item action
+      uses: .
+      with:
+        content: |
+          ## Test markup and property rendering
+          - Run ID: ${{ cloudbees.run_id }}
+          - Color test: <span style="color:green">This text should be green</span>
+          - [backend.tar](https://ourcompany.com/repo/backend.tar)
