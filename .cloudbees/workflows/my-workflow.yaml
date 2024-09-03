@@ -27,3 +27,5 @@ jobs:
             ## Test markup and property rendering
             - Run ID: ${{ cloudbees.run_id }} 
             - Commit Message: ${{ vars.COMMIT_MESSAGE }}
+            - Run ID: ${{ cloudbees.run_id }}
+            - Commit Message: ${{ vars.COMMIT_MESSAGE || 'No commit message available' }}
