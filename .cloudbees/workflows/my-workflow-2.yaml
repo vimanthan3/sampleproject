@@ -33,5 +33,6 @@ jobs:
         uses: docker://alpine:3.18
         shell: sh
         run: |
-          echo "Displaying commit-info.md:"
+          echo "Displaying commit-info.md content:"
           cat /cloudbees/workspace/commit-info.md
+          echo "End of commit-info.md content"
