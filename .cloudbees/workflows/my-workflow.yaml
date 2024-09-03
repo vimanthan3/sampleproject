@@ -1,40 +1,35 @@
-apiVersion: tekton.dev/v1beta1
-kind: Pipeline
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: Workflow
 metadata:
   name: my-workflow
 spec:
-  params:
-    - name: commit-message
-      type: string
-  tasks:
+  jobs:
+    - name: build
+      steps:
+        - name: Say hello
+          image: golang:1.20.3-alpine3.17
+          shell: sh
+          run: |
+            echo "hello world"
+
     - name: capture-commit-message
-      taskSpec:
-        steps:
-          - name: capture-message
-            image: alpine/git
-            script: |
-              COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-              echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" > /tekton/results/commit-message
-        results:
-          - name: commit-message
-            description: The commit message from the latest commit.
+      needs: build
+      steps:
+        - name: Capture Commit Message
+          image: alpine/git
+          shell: sh
+          run: |
+            COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+            echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> /workspace/commit-message.env
 
     - name: publish-evidence
-      runAfter:
-        - capture-commit-message
-      taskSpec:
-        params:
-          - name: commit-message
-            type: string
-        steps:
-          - name: publish
-            image: curlimages/curl
-            script: |
-              echo "## Test markup and property rendering"
-              echo "- Run ID: ${TEKTON_RUN_ID}"
-              echo "- Commit Message: $(params.commit-message)"
-        workspaces:
-          - name: evidence-workspace
-      params:
-        - name: commit-message
-          value: "$(tasks.capture-commit-message.results.commit-message)"
+      needs: capture-commit-message
+      steps:
+        - name: Publish workflow evidence item
+          image: curlimages/curl
+          shell: sh
+          run: |
+            echo "## Test markup and property rendering" > /workspace/evidence.txt
+            echo "- Run ID: ${{ cloudbees.run_id }}" >> /workspace/evidence.txt
+            echo "- Commit Message: $(cat /workspace/commit-message.env | grep COMMIT_MESSAGE | cut -d'=' -f2)" >> /workspace/evidence.txt
+            curl -X POST -H "Content-Type: text/plain" --data-binary @/workspace/evidence.txt http://your-evidence-service/api/publish
