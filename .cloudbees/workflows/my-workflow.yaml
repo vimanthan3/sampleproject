@@ -3,6 +3,10 @@ kind: Workflow
 metadata:
   name: my-workflow
 spec:
+  triggers:
+    - type: push
+      branches:
+        - 'main'
   jobs:
     - name: build
       steps:
@@ -20,7 +24,7 @@ spec:
           shell: sh
           run: |
             COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-            echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> /workspace/commit-message.env
+            echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" > /workspace/commit-message.env
 
     - name: publish-evidence
       needs: capture-commit-message
@@ -31,5 +35,5 @@ spec:
           run: |
             echo "## Test markup and property rendering" > /workspace/evidence.txt
             echo "- Run ID: ${{ cloudbees.run_id }}" >> /workspace/evidence.txt
-            echo "- Commit Message: $(cat /workspace/commit-message.env | grep COMMIT_MESSAGE | cut -d'=' -f2)" >> /workspace/evidence.txt
+            echo "- Commit Message: $(grep COMMIT_MESSAGE /workspace/commit-message.env | cut -d'=' -f2)" >> /workspace/evidence.txt
             curl -X POST -H "Content-Type: text/plain" --data-binary @/workspace/evidence.txt http://your-evidence-service/api/publish
