@@ -29,7 +29,7 @@ spec:
     - name: publish-evidence
       needs: capture-commit-message
       steps:
-        - name: Publish workflow evidence item
+        - name: Publish Workflow Evidence Item
           image: curlimages/curl
           shell: sh
           run: |
