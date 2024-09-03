@@ -1,16 +1,29 @@
 apiVersion: automation.cloudbees.io/v1alpha1
-kind: Task
-metadata:
-  name: publish-evidence-task
-spec:
-  params:
-    - name: COMMIT_MESSAGE
-      type: string
-  steps:
-    - name: publish-evidence
-      image: cloudbees-io/publish-evidence-item:latest
-      script: |
-        #!/bin/sh
-        echo "## Test markup and property rendering"
-        echo "- Run ID: $(context.pipelineRun.name)"
-        echo "- Commit Message: ${COMMIT_MESSAGE:-'No commit message available'}"
+kind: workflow
+name: My workflow
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build:
+    steps:
+      - name: Say hello
+        uses: docker://golang:1.20.3-alpine3.17
+        shell: sh
+        run: |
+          echo "hello world"
+
+  evidence:
+    needs: build
+    steps:
+      - name: Publish workflow evidence item
+        uses: cloudbees-io/publish-evidence-item@v1
+        with:
+          content: |
+            ## Test markup and property rendering
+            - Run ID: ${{ cloudbees.run_id }} 
+            - Run ID: ${{ vars.api_endpoint }}
+  
