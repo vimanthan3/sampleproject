@@ -1,33 +1,30 @@
-apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
-  name: test-publish-evidence-item-task
-spec:
-  params:
-    - name: git-repo-url
-      type: string
-    - name: git-revision
-      type: string
-      default: "main"
-  steps:
-    - name: clone-repo
-      image: alpine/git
-      script: |
-        git clone $(params.git-repo-url) /workspace/source
-        cd /workspace/source
-        git checkout $(params.git-revision)
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: publish-evidence-item
 
-    - name: test-action
-      image: alpine
-      script: |
-        # This assumes that the action.yaml is present in the root of the repository
-        if [ ! -f /workspace/source/action.yaml ]; then
-          echo "action.yaml not found!"
-          exit 1
-        fi
-        # Your testing logic or action invocation goes here
-        echo "Running Test publish-evidence-item action"
-        echo "## Test markup and property rendering"
-        echo "- Run ID: $(params.run_id)"
-        echo "- Color test: <span style=\"color:green\">This text should be green</span>"
-        echo "- [backend.tar](https://ourcompany.com/repo/backend.tar)"
+on:
+  push:
+    branches:
+      - 'main'
+  workflow_dispatch:
+
+jobs:
+  testAction:
+ 
+    name: Clone Repository
+    command:
+          - git clone https://github.com/vimanthan3/sampleproject.git /tmp/source
+          - cd /tmp/source
+          - git checkout main
+          - id: test-action
+            name: Test publish-evidence-item action
+            command:
+          - if [ ! -f /tmp/source/action.yaml ]; then
+              echo "action.yaml not found!"
+              exit 1
+            fi
+          - echo "Running Test publish-evidence-item action"
+          - echo "## Test markup and property rendering"
+          - echo "- Run ID: ${{ cloudbees.run_id }}"
+          - echo "- Color test: <span style=\"color:green\">This text should be green</span>"
+          - echo "- [backend.tar](https://ourcompany.com/repo/backend.tar)"
