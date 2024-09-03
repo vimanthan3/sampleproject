@@ -24,5 +24,5 @@ jobs:
         with:
           content: |
             ## Test markup and property rendering
-            - Run ID: ${{ cloudbees.run_id }}
-
+            - Run ID: ${{ cloudbees.run_id }} 
+            - Commit Message: ${{ github.event.head_commit.message }}
