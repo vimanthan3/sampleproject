@@ -1,31 +1,12 @@
 apiVersion: automation.cloudbees.io/v1alpha1
-kind: workflow
-name: My workflow
-
-on:
-  push:
-    branches:
-      - 'main'
-
-jobs:
-  build:
-    steps:
-      - name: Capture Commit Message
-        uses: docker://golang:1.20.3-alpine3.17
-        shell: sh
-        run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $BEE_WORKSPACE/env-vars
-
-  evidence:
-    needs: build
-    steps:
-      - name: Publish workflow evidence item
-        uses: cloudbees-io/publish-evidence-item@v1
-        with:
-          content: |
-            ## Test markup and property rendering
-            - Run ID: ${{ cloudbees.run_id }} 
-            - Commit Message: ${{ vars.COMMIT_MESSAGE }}
-            - Run ID: ${{ cloudbees.run_id }}
-            - Commit Message: ${{ vars.COMMIT_MESSAGE || 'No commit message available' }}
+kind: Task
+metadata:
+  name: capture-commit-message-task
+spec:
+  steps:
+    - name: capture-commit-message
+      image: golang:1.20.3-alpine3.17
+      script: |
+        #!/bin/sh
+        COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+        echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" > /tekton/results/commit-message
