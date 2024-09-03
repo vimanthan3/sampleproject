@@ -43,7 +43,3 @@ jobs:
             | Commit ID     | ${{ steps.commit_info.outputs.COMMIT_ID }}   |
             | Commit Message| ${{ steps.commit_info.outputs.COMMIT_MESSAGE }}|
           format: MARKDOWN
-        env:
-          cloudbees.api.token: ${{ cloudbees.api.token }}
-          cloudbees.api.url: ${{ cloudbees.api.url }}
-          step.id: ${{ step.id }}
