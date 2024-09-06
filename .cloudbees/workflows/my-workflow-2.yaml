@@ -15,9 +15,7 @@ jobs:
         uses: docker://alpine:3.18
         shell: sh
         run: |
-          apk add --no-cache git
-          https://github.com/vimanthan3/demo1.git
-
+            https://github.com/vimanthan3/DEMO.git
       - name: Build project
         uses: docker://golang:1.20.3-alpine3.17
         shell: sh
