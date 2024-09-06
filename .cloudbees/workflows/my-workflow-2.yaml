@@ -16,7 +16,7 @@ jobs:
         shell: sh
         run: |
           apk add --no-cache git
-          git clone https://github.com/cashokannamalai/spring-petclinic-config-server.git
+          https://github.com/vimanthan3/demo1.git
 
       - name: Build project
         uses: docker://golang:1.20.3-alpine3.17
