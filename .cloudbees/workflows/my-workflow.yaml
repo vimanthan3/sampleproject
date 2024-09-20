@@ -6,22 +6,11 @@ on:
   push:
     branches:
       - '**'
-  workflow_dispatch:
-
-permissions:
-  id-token: read
-
 jobs:
-  testAction:
+  build:
     steps:
-    - id: testAction
-      name: Test publish-evidence-item action
-      kind: build
-      uses: .
-      with:
-        content: |
-          ## Test markup and property rendering
-          - Run ID: ${{ cloudbees.run_id }}
-    needs:
-      - scan
-      - build
+      - name: Say hello
+        uses: docker://golang:1.20.3-alpine3.17
+        shell: sh
+        run: |
+          echo "hello world"
